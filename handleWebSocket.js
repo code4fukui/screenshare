@@ -1,11 +1,8 @@
-import { createWebSocketCBOR } from "./static/createWebSocket.js";
-
 let cam = null;
 let running = false;
 const clients = [];
 
-export const handleWS = (socket0) => {
-  const socket = createWebSocketCBOR(socket0);
+export const handleWebSocket = (socket) => {
   socket.onopen = () => {
     console.log("CONNECTED");
   };

@@ -17,6 +17,8 @@ import { createWebSocket } from "./createWebSocket.js";
 import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
 import { video2jpg } from "https://code4fukui.github.io/dataencoder/video2image.js";
 
+const group = location.hash.substring(1);
+
 const backcamera = false;
 const camera = new Camera(videoElement, {
   width: 1280,
@@ -27,7 +29,7 @@ const camera = new Camera(videoElement, {
 const ws = createWebSocket();
 ws.onopen = (e) => {
   console.log("CONNECTED");
-  ws.send({ type: "init_cam" });
+  ws.send({ type: "init_cam", group });
 };
 ws.onclose = (e) => {
   console.log("DISCONNECTED");
@@ -39,7 +41,7 @@ ws.onmessage = (e) => {
     camera.start();
     camera.onFrame = async () => {
       const s = video2jpg(videoElement, 0.7);
-      ws.send({ type: "cam_image", img: s });
+      ws.send({ type: "cam_image", group, img: s });
     };
   } else if (t == "stop_cam") {
     camera.stop();

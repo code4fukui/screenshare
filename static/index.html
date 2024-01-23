@@ -16,10 +16,12 @@ img {
 import { createWebSocket } from "./createWebSocket.js";
 import { encodeData } from "https://code4fukui.github.io/dataencoder/encodeData.js";
 
+const group = location.hash.substring(1);
+
 const ws = createWebSocket();
 ws.onopen = (e) => {
   console.log("CONNECTED");
-  ws.send({ type: "init_client" });
+  ws.send({ type: "init_client", group });
 };
 ws.onclose = (e) => {
   console.log("DISCONNECTED");

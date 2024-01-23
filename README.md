@@ -1,14 +1,8 @@
-# WebSockets on Deno template
+# nekocam with WebSockets
 
 - server
 ```sh
 deno run -A server.js
 ```
 
-- client 1
-```sh
-deno run -A static/client.js
-```
-
-- client 2
 - open http://127.0.0.1:8000/

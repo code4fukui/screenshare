@@ -15,21 +15,16 @@ video {
 <script type="module">
 import { createWebSocket } from "./createWebSocket.js";
 import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
-import { video2jpg } from "./video2image.js";
+import { video2jpg } from "https://code4fukui.github.io/dataencoder/video2image.js";
 
-const ws = createWebSocket();
-
+const backcamera = false;
 const camera = new Camera(videoElement, {
-  onFrame: async () => {
-    const s = video2jpg(videoElement, 0.7);
-    ws.send({ type: "cam_image", img: s });
-    // use videoElement as image
-  },
   width: 1280,
   height: 720,
-  backcamera: true,
+  backcamera,
 });
 
+const ws = createWebSocket();
 ws.onopen = (e) => {
   console.log("CONNECTED");
   ws.send({ type: "init_cam" });
@@ -42,6 +37,10 @@ ws.onmessage = (e) => {
   const t = e.data.type;
   if (t == "start_cam") {
     camera.start();
+    camera.onFrame = async () => {
+      const s = video2jpg(videoElement, 0.7);
+      ws.send({ type: "cam_image", img: s });
+    };
   } else if (t == "stop_cam") {
     camera.stop();
   }

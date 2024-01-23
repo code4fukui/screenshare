@@ -1,4 +1,9 @@
-const url = "ws://127.0.0.1:8000/";
+const getWebSocketURL = () => {
+  if (!location) return "ws://127.0.0.1:8000/";
+  return (location.protocol == "http:" ? "ws://" : "wss://") + location.host;
+};
+
+const url = getWebSocketURL();
 const websocket = new WebSocket(url);
 let pingInterval;
 

@@ -5,6 +5,7 @@ const port = Deno.args[0] || 8000;
 
 Deno.serve({
   port,
+  hostname: "[::]",
   handler: async (request, info) => {
     if (request.headers.get("upgrade") === "websocket") {
       const { socket, response } = Deno.upgradeWebSocket(request);

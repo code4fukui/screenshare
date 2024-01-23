@@ -6,6 +6,25 @@ class Group {
   constructor(name) {
     this.name = name;
   }
+  startCam() {
+    try {
+      this.cam.send({ type: "start_cam" });
+      console.log("start cam");
+      this.running = true;
+    } catch (e) {
+      console.log("can't start cam");
+    }
+  }
+  stopCam() {
+    if (this.running) {
+      this.running = false;
+      try {
+        this.cam.send({ type: "stop_cam" });
+      } catch (e) {
+      }
+      console.log("stop cam");
+    }
+  }
 };
 
 const groups = {};
@@ -16,6 +35,8 @@ const getGroup = (name) => {
   const g2 = groups[name] = new Group(name);
   return g2;
 };
+
+
 
 export const handleWebSocket = (socket) => {
   socket.onopen = () => {
@@ -28,19 +49,18 @@ export const handleWebSocket = (socket) => {
     const t = data.type;
     //console.log(data, t);
     console.log(g.name, t);
+
     if (t == "init_cam") {
       if (g.cam) {
-        try {
-          g.cam.send({ type: "end_cam" });
-        } catch (e) {
-        }
+        g.stopCam();
       }
       g.cam = socket;
+      if (g.clients.length > 0) {
+        g.startCam();
+      }
     } else if (t == "init_client") {
       if (g.cam && !g.running) {
-        g.cam.send({ type: "start_cam" });
-        console.log("start cam");
-        g.running = true;
+        g.startCam();
       }
       g.clients.push(socket);
     } else if (t == "cam_image") {
@@ -60,11 +80,7 @@ export const handleWebSocket = (socket) => {
         if (g.clients[i] == socket) {
           g.clients.splice(i, 1);
           if (g.clients.length == 0) {
-            if (g.running) {
-              g.running = false;
-              g.cam.send({ type: "stop_cam" });
-              console.log("stop cam");
-            }
+            g.stopCam();
           }
           break A;
         }

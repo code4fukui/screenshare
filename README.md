@@ -10,5 +10,5 @@ deno run -A server.js
 deno run -A static/client.js
 ```
 
-- clint 2
+- client 2
 - open http://127.0.0.1:8000/

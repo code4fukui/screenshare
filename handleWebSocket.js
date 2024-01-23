@@ -1,4 +1,4 @@
-export const handleWS = (socket) => {
+export const handleWebSocket = (socket) => {
   socket.onopen = () => {
     console.log("CONNECTED");
   };

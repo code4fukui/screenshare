@@ -1,10 +1,6 @@
-const getWebSocketURL = () => {
-  if (!location) return "ws://127.0.0.1:8000/";
-  return (location.protocol == "http:" ? "ws://" : "wss://") + location.host;
-};
+import { createWebSocket } from "./createWebSocket.js";
 
-const url = getWebSocketURL();
-const websocket = new WebSocket(url);
+const websocket = createWebSocket();
 let pingInterval;
 
 function writeToScreen(message) {

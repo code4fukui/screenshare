@@ -64,7 +64,7 @@ export const handleWebSocket = (socket) => {
       }
       g.clients.push(socket);
     } else if (t == "cam_image") {
-      console.log("img transfer", g.clients.length);
+      //console.log("img transfer", g.clients.length);
       g.clients.forEach(i => {
         try {
           i.send({ type: "cam_image", img: data.img });

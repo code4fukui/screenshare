@@ -36,29 +36,33 @@ const camera = new Camera(videoElement, {
   backcamera,
 });
 
-const ws = createWebSocket();
-ws.onopen = (e) => {
-  console.log("CONNECTED");
-  ws.send({ type: "init_cam", group });
+const start = () => {
+  const ws = createWebSocket();
+  ws.onopen = (e) => {
+    console.log("CONNECTED");
+    ws.send({ type: "init_cam", group });
+  };
+  ws.onclose = (e) => {
+    console.log("DISCONNECTED");
+    setTimeout(start, 100); // restart
+  };
+  ws.onmessage = (e) => {
+    console.log(`RECEIVED: ${e.data}`);
+    const t = e.data.type;
+    if (t == "start_cam") {
+      camera.start();
+      camera.onFrame = async () => {
+        const s = video2jpg(videoElement, 0.7);
+        ws.send({ type: "cam_image", group, img: s });
+      };
+    } else if (t == "stop_cam") {
+      camera.stop();
+    }
+  };
+  ws.onerror = (e) => {
+    console.log(`ERROR: ${e.data}`);
+  };
 };
-ws.onclose = (e) => {
-  console.log("DISCONNECTED");
-};
-ws.onmessage = (e) => {
-  console.log(`RECEIVED: ${e.data}`);
-  const t = e.data.type;
-  if (t == "start_cam") {
-    camera.start();
-    camera.onFrame = async () => {
-      const s = video2jpg(videoElement, 0.7);
-      ws.send({ type: "cam_image", group, img: s });
-    };
-  } else if (t == "stop_cam") {
-    camera.stop();
-  }
-};
-ws.onerror = (e) => {
-  console.log(`ERROR: ${e.data}`);
-};
+start();
 
 </script>

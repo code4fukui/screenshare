@@ -28,23 +28,27 @@ import { encodeData } from "https://code4fukui.github.io/dataencoder/encodeData.
 
 const group = location.hash.substring(1);
 
-const ws = createWebSocket();
-ws.onopen = (e) => {
-  console.log("CONNECTED");
-  ws.send({ type: "init_client", group });
+const start = () => {
+  const ws = createWebSocket();
+  ws.onopen = (e) => {
+    console.log("CONNECTED");
+    ws.send({ type: "init_client", group });
+  };
+  ws.onclose = (e) => {
+    console.log("DISCONNECTED");
+    setTimeout(start, 100); // restart
+  };
+  ws.onmessage = (e) => {
+    //console.log(`RECEIVED: ${e.data}`);
+    const t = e.data.type;
+    if (t == "cam_image") {
+      img.src = encodeData("image/jpeg", e.data.img);
+    }
+  };
+  ws.onerror = (e) => {
+    console.log(`ERROR: ${e.data}`);
+  };
 };
-ws.onclose = (e) => {
-  console.log("DISCONNECTED");
-};
-ws.onmessage = (e) => {
-  //console.log(`RECEIVED: ${e.data}`);
-  const t = e.data.type;
-  if (t == "cam_image") {
-    img.src = encodeData("image/jpeg", e.data.img);
-  }
-};
-ws.onerror = (e) => {
-  console.log(`ERROR: ${e.data}`);
-};
+start();
 
 </script>

@@ -2,14 +2,16 @@
 </head><body>
 
 <video id=videoElement></video>
+<input id=inwait size=5 value=500> msec <button id=btn>start capture</button>
 
 <footer>
-<a href=https://github.com/code4fukui/nekocam/>nekocam src on GitHub</a><br>
+<a href=https://github.com/code4fukui/screenshare/>screenshare src on GitHub</a><br>
 </footer>
 
 <style>
 body {
   margin: 0;
+  text-align: center;
 }
 video {
   width: 100vw;
@@ -24,17 +26,51 @@ footer a {
 
 <script type="module">
 import { createWebSocket } from "./createWebSocket.js";
-import { Camera } from "https://code4fukui.github.io/Camera/Camera.js";
 import { video2jpg } from "https://code4fukui.github.io/dataencoder/video2image.js";
+import { deepEqual } from "https://js.sabae.cc/deepEqual.js";
 
 const group = location.hash.substring(1);
 
-const backcamera = false;
-const camera = new Camera(videoElement, {
-  width: 1280,
-  height: 720,
-  backcamera,
-});
+const startCapture = async (videoin) => {
+  console.log(navigator.mediaDevices)
+  const cursor = "never"; // chkmouse.checked ? "always" : "never"; // always, never, motion ... 効かない
+  videoin.srcObject = await navigator.mediaDevices.getDisplayMedia({ video: { cursor }, audio: false });
+  await videoin.play();
+  console.log(videoin.srcObject.getVideoTracks());
+};
+
+btn.onclick = async () => {
+  startCapture(videoElement);
+};
+
+const displayMediaOptions = {
+  video: {
+    displaySurface: "browser",
+  },
+  /*
+  audio: {
+    suppressLocalAudioPlayback: false,
+  },
+  */
+  audio: false,
+  preferCurrentTab: false,
+  selfBrowserSurface: "exclude",
+  systemAudio: "include",
+  surfaceSwitching: "include",
+  monitorTypeSurfaces: "include",
+};
+/*
+async function startCapture(displayMediaOptions) {
+  try {
+    return await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+  } catch (err) {
+    console.error(`Error: ${err}`);
+  }
+  return null;
+}
+*/
+
+let tt = null;
 
 const start = () => {
   const ws = createWebSocket();
@@ -50,13 +86,21 @@ const start = () => {
     console.log(`RECEIVED: ${e.data}`);
     const t = e.data.type;
     if (t == "start_cam") {
-      camera.start();
-      camera.onFrame = async () => {
+      if (tt) {
+        clearInterval(tt);
+      }
+      let bkjpg = null;
+      const wait = inwait.value || 500;
+      tt = setInterval(() => {
         const s = video2jpg(videoElement, 0.7);
-        ws.send({ type: "cam_image", group, img: s });
-      };
+        if (!deepEqual(s, bkjpg)) {
+          ws.send({ type: "cam_image", group, img: s });
+          bkjpg = s;
+          console.log("send")
+        }
+      }, wait);
     } else if (t == "stop_cam") {
-      camera.stop();
+      //  camera.stop();
     }
   };
   ws.onerror = (e) => {

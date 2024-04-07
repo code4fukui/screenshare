@@ -2,7 +2,7 @@
 </head><body>
 
 <video id=videoElement></video>
-<input id=inwait size=5 value=500> msec <button id=btn>start capture</button>
+<input id=inwait size=5 value=1000> msec <button id=btn>start capture</button>
 
 <footer>
 <a href=https://github.com/code4fukui/screenshare/>screenshare src on GitHub</a><br>
@@ -90,15 +90,18 @@ const start = () => {
         clearInterval(tt);
       }
       let bkjpg = null;
-      const wait = inwait.value || 500;
-      tt = setInterval(() => {
+      const cap = () => {
         const s = video2jpg(videoElement, 0.7);
         if (!deepEqual(s, bkjpg)) {
           ws.send({ type: "cam_image", group, img: s });
           bkjpg = s;
           console.log("send")
         }
-      }, wait);
+        const wait = inwait.value || 500;
+        setTimeout(cap, wait);
+      };
+      const wait = inwait.value || 500;
+      setTimeout(cap, wait);
     } else if (t == "stop_cam") {
       //  camera.stop();
     }
